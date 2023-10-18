@@ -1,0 +1,56 @@
+require('dotenv').config();
+const axios = require('axios');
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const RUN_MODE = process.env.RUN_MODE;
+const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Не используй LaTeX для формул. Задача:  ';
+
+const getGPTAnswer = async (text) => {
+    const data = {
+        model: 'gpt-4',
+        messages: [
+            {
+                role: 'user',
+                content: prompt + text
+            }
+        ]
+    };
+
+    const config = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + OPENAI_API_KEY
+        }
+    };
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', data, config);
+        return response.data.choices[0].message.content.trim();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const main = async function (event, _context) {
+    const taskText = event.queryStringParameters.text;
+
+    if (!taskText) {
+        console.error('No text');
+    }
+
+    const gtpAnswer = await getGPTAnswer(taskText);
+
+    return {
+        statusCode: 200,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: { gtpAnswer },
+    };
+};
+
+if (RUN_MODE === 'dev') {
+  main({ queryStringParameters: { text: 'Чему равно 8+15*4?' } }, {})
+    .then(res => console.log(res))
+} else if (RUN_MODE === 'prod') {
+  module.exports.handler = main
+}
