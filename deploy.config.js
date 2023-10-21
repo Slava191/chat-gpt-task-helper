@@ -7,7 +7,7 @@ module.exports = {
     files: [ 'package*.json', 'dist/**' ],
     handler: 'dist/index.handler',
     runtime: 'nodejs16',
-    timeout: 60,
+    timeout: 120,
     memory: 128,
     environment: {
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
