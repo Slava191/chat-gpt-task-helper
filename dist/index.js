@@ -45,7 +45,7 @@ const main = async function (event, _context) {
 
     const gtpAnswer = await getGPTAnswer(taskText);
 
-    logger.info({"question": taskText, "answer": gtpAnswer})
+    logger.info({"question": taskText.slice(0, 20), "answer": gtpAnswer.slice(0, 20)})
 
     return {
         statusCode: 200,
