@@ -1,5 +1,11 @@
 require('dotenv').config();
 const axios = require('axios');
+const winston = require('winston');
+const logger = winston.createLogger({
+    level: 'debug',
+    format: winston.format.json(),
+    transports: [new winston.transports.Console()],
+});
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RUN_MODE = process.env.RUN_MODE;
 const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Не используй LaTeX для формул. Если задача по физике или по геометрии, то используй шаблон: дано, решение, ответ. Задача:  ';
@@ -38,6 +44,8 @@ const main = async function (event, _context) {
     }
 
     const gtpAnswer = await getGPTAnswer(taskText);
+
+    logger.info({"question": taskText, "answer": gtpAnswer})
 
     return {
         statusCode: 200,

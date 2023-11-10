@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.5.1",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "yandex-cloud-deploy-fn": "^2.0.0"
