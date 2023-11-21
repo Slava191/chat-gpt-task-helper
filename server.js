@@ -2,8 +2,13 @@ require('dotenv').config();
 const express = require('express')
 const https = require('https');
 const fs = require('fs');
+const cors = require('cors');
 const main = require('./dist/index')
 const app = express()
+
+app.use(cors({
+  origin: '*'
+}));
 
 const SERVER_PORT = process.env.SERVER_PORT
 const SERVER_ACCESS_KEY = process.env.SERVER_ACCESS_KEY;
