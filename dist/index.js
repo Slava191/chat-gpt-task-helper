@@ -61,4 +61,6 @@ if (RUN_MODE === 'dev') {
     .then(res => console.log(res))
 } else if (RUN_MODE === 'prod') {
   module.exports.handler = main
+} else if (RUN_MODE === 'server') {
+  module.exports = main
 }
