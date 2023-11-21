@@ -1,10 +1,23 @@
 require('dotenv').config();
 const express = require('express')
+const https = require('https');
+const fs = require('fs');
 const main = require('./dist/index')
 const app = express()
 
 const SERVER_PORT = process.env.SERVER_PORT
 const SERVER_ACCESS_KEY = process.env.SERVER_ACCESS_KEY;
+
+const sslCrtDir = process.env.SSL_CRT_DIR
+const sslCrtName = process.env.SSL_CRT_NAME
+
+const sslCrt = `${sslCrtDir}/${sslCrtName}`
+
+const httpsOptions = {
+    key: fs.readFileSync(`${sslCrt}.key`),
+    cert: fs.readFileSync(`${sslCrt}.crt`),
+    ca: fs.readFileSync(`${sslCrt}.ca`)
+};
 
 app.get('/', async (req, res) => {
   const accessKey = req.query.access_key
@@ -25,6 +38,8 @@ app.get('/', async (req, res) => {
   res.send(gptAnswer.body)
 })
 
-app.listen(SERVER_PORT, () => {
+const server = https.createServer(httpsOptions, app);
+
+server.listen(SERVER_PORT, () => {
   console.log(`Task helper app listening on port ${SERVER_PORT}`)
 })
