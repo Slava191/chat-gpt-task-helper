@@ -33,13 +33,15 @@ app.get('/', async (req, res) => {
   }
 
   const text = req.query.text
+  const imgLinksString = req.query.img_links
+  const img_links = imgLinksString ? imgLinksString.split(',') : []
 
   if(!text.trim().length) {
     res.status(400).send('Empty text')
     return;
   }
 
-  const gptAnswer = await main({ queryStringParameters: { text } }, {})
+  const gptAnswer = await main({ queryStringParameters: { text, img_links } }, {})
   res.send(gptAnswer.body)
 })
 
