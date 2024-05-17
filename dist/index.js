@@ -105,7 +105,7 @@ const main = async function (event, _context) {
 if (RUN_MODE === 'dev') {
 //   main({ queryStringParameters: { text: 'Чему равно 8+15*4?' } }, {})
 //     .then(res => console.log(res))
-main({ queryStringParameters: { text: 'Что изображено на картинке?', img_links: ['https://reshimvse.com/api/1617354554186.png'] } }, {})
+main({ queryStringParameters: { text: 'Что изображено на картинке?', img_links: ['1617354554186.png'] } }, {})
      .then(res => console.log(res))
 } else if (RUN_MODE === 'prod') {
   module.exports.handler = main
