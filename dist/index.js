@@ -91,7 +91,7 @@ const main = async function (event, _context) {
 
     const gptAnswer = await getGPTAnswer(taskText, imgLinks);
 
-    logger.info({"question": taskText.slice(0, 20), "answer": gtpAnswer.slice(0, 20)})
+    logger.info({"question": taskText.slice(0, 20), "answer": gptAnswer.slice(0, 20)})
 
     return {
         statusCode: 200,
