@@ -8,7 +8,7 @@ const logger = winston.createLogger({
 });
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RUN_MODE = process.env.RUN_MODE;
-const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Не используй LaTeX для формул. Если задача по физике или по геометрии, то используй шаблон: дано, решение, ответ. Задача:  ';
+const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Используй шаблон: дано, решение, ответ. Задача:  ';
 
 const getGPTAnswer = async (text, img_links) => {
     const image_content = []
@@ -66,6 +66,15 @@ async function fetchImageAsBase64(url) {
     }
 }
 
+const proccessLatex = (text) => {
+    text = text.split("\\[").join("[m]");
+    text = text.split("\\]").join("[/m]");
+    text = text.split("\\(").join("[m]");
+    text = text.split("\\)").join("[/m]");
+    text = text.split("\\dfrac").join("\\frac");
+    return text
+  }
+
 const main = async function (event, _context) {
     const taskText = event.queryStringParameters.text;
     const imgLinks = event.queryStringParameters.img_links || [];
@@ -89,7 +98,8 @@ const main = async function (event, _context) {
         }
     }
 
-    const gptAnswer = await getGPTAnswer(taskText, imgLinks);
+    let gptAnswer = await getGPTAnswer(taskText, imgLinks);
+    gptAnswer = proccessLatex(gptAnswer);
 
     logger.info({"question": taskText.slice(0, 20), "answer": gptAnswer.slice(0, 20)})
 
