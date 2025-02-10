@@ -12,10 +12,10 @@
   "dependencies": {
     "axios": "^0.21.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "https-proxy-agent": "^5.0.1",
-    "winston": "^3.11.0"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "https-proxy-agent": "^5.0.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "yandex-cloud-deploy-fn": "^2.0.0"
