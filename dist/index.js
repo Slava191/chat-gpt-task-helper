@@ -21,6 +21,9 @@ const getGPTAnswer = async (text, img_links) => {
     
     for (const img of img_links) {
         const base64Image = await fetchImageAsBase64(img);
+        if (!base64Image) {
+            throw new Error('Failed to fetch image');
+        }
         image_content.push({
             type: "image_url",
             image_url: {
@@ -51,14 +54,35 @@ const getGPTAnswer = async (text, img_links) => {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + OPENAI_API_KEY
         },
-        httpsAgent: proxyAgent
+        httpsAgent: proxyAgent,
+        timeout: 30000,
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        httpsAgent: new httpsProxyAgent({
+            ...PROXY_URL,
+            rejectUnauthorized: false,
+            minVersion: 'TLSv1',
+            maxVersion: 'TLSv1.2',
+            ciphers: 'ALL',
+        })
     };
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', data, config);
+        if (!response.data) {
+            throw new Error('Empty response from OpenAI');
+        }
         return response.data.choices[0].message.content.trim();
     } catch (error) {
-        console.error(error);
+        logger.error('GPT API Error:', {
+            message: error.message,
+            code: error.code,
+            response: error.response ? {
+                status: error.response.status,
+                data: error.response.data
+            } : 'No response'
+        });
+        throw error;
     }
 }
 
@@ -66,12 +90,25 @@ async function fetchImageAsBase64(url) {
     try {
         const response = await axios.get(url, { 
             responseType: 'arraybuffer',
-            httpsAgent: proxyAgent
+            timeout: 30000,
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+            httpsAgent: new httpsProxyAgent({
+                ...PROXY_URL,
+                rejectUnauthorized: false,
+                minVersion: 'TLSv1',
+                maxVersion: 'TLSv1.2',
+                ciphers: 'ALL',
+            })
         });
         const base64Image = Buffer.from(response.data, 'binary').toString('base64');
         return base64Image;
     } catch (error) {
-        console.error("Failed to fetch or convert image:", error);
+        logger.error("Failed to fetch or convert image:", {
+            url,
+            error: error.message,
+            code: error.code
+        });
         return null;
     }
 }
@@ -125,7 +162,7 @@ const main = async function (event, _context) {
 if (RUN_MODE === 'dev') {
 //   main({ queryStringParameters: { text: 'Чему равно 8+15*4?' } }, {})
 //     .then(res => console.log(res))
-main({ queryStringParameters: { text: 'Что изображено на картинке?', img_links: ['1617354554186.png'] } }, {})
+main({ queryStringParameters: { text: 'Что изображено на картинке?', img_links: '' } }, {})
      .then(res => console.log(res))
 } else if (RUN_MODE === 'prod') {
   module.exports.handler = main
