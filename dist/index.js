@@ -12,7 +12,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RUN_MODE = process.env.RUN_MODE;
 const PROXY_URL = process.env.PROXY_URL;
 
-const proxyAgent = new httpsProxyAgent(PROXY_URL);
+const proxyAgent = PROXY_URL ? new httpsProxyAgent(PROXY_URL) : null;
 
 const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Используй шаблон: дано, решение, ответ. Задача:  ';
 
@@ -54,18 +54,20 @@ const getGPTAnswer = async (text, img_links) => {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + OPENAI_API_KEY
         },
-        httpsAgent: proxyAgent,
         timeout: 30000,
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
-        httpsAgent: new httpsProxyAgent({
-            ...PROXY_URL,
+    };
+
+    if (PROXY_URL) {
+        config.httpsAgent = new httpsProxyAgent({
+            proxy: PROXY_URL,
             rejectUnauthorized: false,
             minVersion: 'TLSv1',
             maxVersion: 'TLSv1.2',
             ciphers: 'ALL',
-        })
-    };
+        });
+    }
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', data, config);
@@ -77,6 +79,7 @@ const getGPTAnswer = async (text, img_links) => {
         logger.error('GPT API Error:', {
             message: error.message,
             code: error.code,
+            proxy: PROXY_URL || 'not set',
             response: error.response ? {
                 status: error.response.status,
                 data: error.response.data
@@ -88,26 +91,32 @@ const getGPTAnswer = async (text, img_links) => {
 
 async function fetchImageAsBase64(url) {
     try {
-        const response = await axios.get(url, { 
+        const config = { 
             responseType: 'arraybuffer',
             timeout: 30000,
             maxContentLength: Infinity,
             maxBodyLength: Infinity,
-            httpsAgent: new httpsProxyAgent({
-                ...PROXY_URL,
+        };
+
+        if (PROXY_URL) {
+            config.httpsAgent = new httpsProxyAgent({
+                proxy: PROXY_URL,
                 rejectUnauthorized: false,
                 minVersion: 'TLSv1',
                 maxVersion: 'TLSv1.2',
                 ciphers: 'ALL',
-            })
-        });
+            });
+        }
+
+        const response = await axios.get(url, config);
         const base64Image = Buffer.from(response.data, 'binary').toString('base64');
         return base64Image;
     } catch (error) {
         logger.error("Failed to fetch or convert image:", {
             url,
             error: error.message,
-            code: error.code
+            code: error.code,
+            proxy: PROXY_URL || 'not set'
         });
         return null;
     }
