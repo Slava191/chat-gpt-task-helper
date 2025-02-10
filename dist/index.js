@@ -6,8 +6,14 @@ const logger = winston.createLogger({
     format: winston.format.json(),
     transports: [new winston.transports.Console()],
 });
+const httpsProxyAgent = require('https-proxy-agent');
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RUN_MODE = process.env.RUN_MODE;
+const PROXY_URL = process.env.PROXY_URL;
+
+const proxyAgent = new httpsProxyAgent(PROXY_URL);
+
 const prompt = 'Реши задачу. Выполни расчеты. Распиши пошагово. Используй шаблон: дано, решение, ответ. Задача:  ';
 
 const getGPTAnswer = async (text, img_links) => {
@@ -44,7 +50,8 @@ const getGPTAnswer = async (text, img_links) => {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + OPENAI_API_KEY
-        }
+        },
+        httpsAgent: proxyAgent
     };
 
     try {
@@ -57,7 +64,10 @@ const getGPTAnswer = async (text, img_links) => {
 
 async function fetchImageAsBase64(url) {
     try {
-        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        const response = await axios.get(url, { 
+            responseType: 'arraybuffer',
+            httpsAgent: proxyAgent
+        });
         const base64Image = Buffer.from(response.data, 'binary').toString('base64');
         return base64Image;
     } catch (error) {

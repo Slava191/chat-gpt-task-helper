@@ -11,7 +11,8 @@ module.exports = {
     memory: 128,
     environment: {
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-      RUN_MODE: 'prod'
+      RUN_MODE: 'prod',
+      PROXY_URL: process.env.PROXY_URL
     },
   },
 };
